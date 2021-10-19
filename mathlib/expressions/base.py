@@ -3,7 +3,8 @@ from typing import List
 
 @dataclass
 class Expr:
-    pass
+    def __repr__(self) -> str:
+        return str(self)
 
 @dataclass
 class SymbolMeta(Expr):
