@@ -9,6 +9,8 @@ class Symbol(SymbolMeta):
         elif isinstance(other, Symbol) and self == other:
             return mul.Mul([2, Symbol(self.var)])
         else:
-            return add.Add([self, other])
+            k=add.Add([self, other])
+            k.sort()
+            return k
     def __str__(self):
         return str(self.var)

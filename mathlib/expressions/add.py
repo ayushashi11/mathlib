@@ -4,10 +4,51 @@ from . import mul
 from .number import ANYNUMBER
 
 class Add(AddMeta):
+    def precedance(self, a):
+        match a:
+            case int():
+                return (0,)
+            case float():
+                return (0,)
+            case sym.Symbol(var):
+                return (1, var)
+            case Add(operands):
+                return (2, *map(self.precedance, operands))
+            case mul.Mul(operands):
+                return (3, *map(self.precedance, operands))
+            case _:
+                return float('inf')
+    def sort(self):
+        self.operands.sort(key=self.precedance)
     def __add__(self, other):
+        self.sort()
         if isinstance(other, Add):
             print("two adds")
-            return Add([*self.operands, *other.operands])
+            other.sort()
+            i=0
+            j=0
+            ret = []
+            while i<len(self.operands) and j<len(self.operands):
+                match self.operands[i], other.operands[j]:
+                    case (int(), int())|(int(), float())|(float(), int())|(float(), float()):
+                        ret.append(self.operands[i]+other.operands[j])
+                        i+=1
+                        j+=1
+                    case (sym.Symbol(v1), sym.Symbol(v2)) if v1==v2:
+                        ret.append(mul.Mul([2,sym.Symbol(v1)]))
+                        i+=1
+                        j+=1
+                    case _:
+                        ret.append(self.operands[i])
+                        i+=1
+            while i<len(self.operands):
+                ret.append(self.operands[i])
+                i+=1
+            while j<len(other.operands):
+                ret.append(other.operands[j])
+                j+=1
+            return Add(ret)
+
         elif isinstance(other, sym.Symbol) and other in self.operands:
             res = [*self.operands]
             res.remove(other)
